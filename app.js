@@ -54,7 +54,7 @@ app.post("/login", async (req, res) => {
       if (passwordMatch) {
         res.render("home");
       } else {
-        res.send("Wrong Password");
+        res.send('<script>alert("Wrong Password"); window.location="/";</script>');
       }
     } else {
       res.send("User not found");
