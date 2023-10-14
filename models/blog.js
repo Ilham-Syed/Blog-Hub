@@ -1,15 +1,6 @@
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema;
 
-
-const CampGroundSchema=new Schema({
-    title:String,
-    price:Number,
-    image:String,
-    description:String,
-    location:String
-})
-
 const BlogSchema=new Schema({
     title:String,
     author:String,

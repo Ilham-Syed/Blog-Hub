@@ -1,80 +1,13 @@
-// const express=require('express');
-// const app=express();
-// const path=require('path');
-// const ejsMate=require('ejs-mate');
-// const Blog=require('./models/blog');
-// const mongoose=require('mongoose');
-// const methodOverride=require('method-override');
-
-// mongoose.connect('mongodb://127.0.0.1:27017/blog-hub')
-
-// const db = mongoose.connection;
-// db.on("error", console.error.bind(console, "connection error:"));
-// db.once("open", () => {
-//     console.log("Database connected");
-// });
-
-// app.engine('ejs',ejsMate);
-
-// app.set('view engine','ejs');
-// app.set('views',path.join(__dirname,'views'))
-
-// app.use(express.urlencoded({extended:true}));
-// app.use(methodOverride('_method'));
-
-// app.get('/',(req,res)=>{
-//     res.render('home');
-// })
-
-// app.get('/campgrounds',async (req,res)=>{
-//     const campgrounds=await Campground.find({});
-//     res.render('campgrounds/index',{campgrounds});
-// })
-
-// app.get('/campgrounds/new',async (req,res)=>{
-//     res.render('campgrounds/new');
-// })
-
-// app.get('/campgrounds/:id',async (req,res)=>{
-//     const campground=await Campground.findById(req.params.id);
-//     res.render('campgrounds/show',{campground});
-// })
-
-// app.get('/campgrounds/:id/edit',async(req,res)=>{
-//     const campground=await Campground.findById(req.params.id);
-//     res.render('campgrounds/edit',{campground});
-// })
-
-// app.post('/campgrounds',async (req,res)=>{
-//     const campground=new Campground(req.body.campground);
-//     await campground.save();
-//     res.redirect(`/campgrounds/${campground._id}`);
-// })
-
-// app.put('/campgrounds/:id',async (req,res)=>{
-//     const {id}=req.params;
-//     const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
-//     res.redirect(`/campgrounds/${id}`);
-// })
-
-// app.delete('/campgrounds/:id',async (req,res)=>{
-//     const {id}= req.params;
-//     await Campground.findByIdAndDelete(id);
-//     res.redirect('/campgrounds');
-// })
-
-// app.listen(3000,()=>{
-//     console.log("Serving on port 3000");
-// })
-
 const express = require("express");
 const app = express();
 const path = require("path");
+const bcrypt=require("bcrypt");
 const ejsMate = require("ejs-mate");
 const Blog = require("./models/blog"); // Import your Blog model
+const UserCollection = require("./models/users"); //importing the users collection
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
-
+// const hbs=require("hbs");
 mongoose.connect("mongodb://127.0.0.1:27017/blog-hub");
 
 const db = mongoose.connection;
@@ -90,12 +23,53 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
+app.use(express.json());
 
 app.get("/", (req, res) => {
+  res.render("authentication/templates/login");
+});
+
+app.get("/signup", (req, res) => {
+  res.render("authentication/templates/signup");
+});
+
+
+app.post("/signup", async (req, res) => {
+  const data = {
+    name: req.body.name,
+    // Hash the password using bcrypt
+    password: await bcrypt.hash(req.body.password, 10), // 10 is the number of salt rounds
+  };
+
+  await UserCollection.insertMany([data]);
+
   res.render("home");
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    const user = await UserCollection.findOne({ name: req.body.name });
+    if (user) {
+      const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+      if (passwordMatch) {
+        res.render("home");
+      } else {
+        res.send("Wrong Password");
+      }
+    } else {
+      res.send("User not found");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // Update route for displaying blogs
+app.get("/home",(req,res)=>{
+  res.render("home");
+})
+
 app.get("/blogs", async (req, res) => {
   const blogs = await Blog.find({});
   res.render("blogs/index", { blogs });
