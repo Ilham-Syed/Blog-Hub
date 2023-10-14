@@ -3,7 +3,7 @@ const app = express();
 const path = require("path");
 const bcrypt=require("bcrypt");
 const ejsMate = require("ejs-mate");
-const Blog = require("./models/blog"); // Import your Blog model
+const Blog = require("./models/blog"); 
 const UserCollection = require("./models/users"); //importing the users collection
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
@@ -90,14 +90,14 @@ app.get("/blogs/:id/edit", async (req, res) => {
 });
 
 app.post("/blogs", async (req, res) => {
-  const blog = new Blog(req.body); // Assuming the form fields match the Blog schema
+  const blog = new Blog(req.body); 
   await blog.save();
   res.redirect(`/blogs/${blog._id}`);
 });
 
 app.put("/blogs/:id", async (req, res) => {
   const { id } = req.params;
-  await Blog.findByIdAndUpdate(id, req.body); // Assuming the form fields match the Blog schema
+  await Blog.findByIdAndUpdate(id, req.body); 
   res.redirect(`/blogs/${id}`);
 });
 
